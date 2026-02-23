@@ -25,6 +25,14 @@ const SYSTEM_PROMPT = `You are a helpful AI assistant similar to Claude.
 
 Don't write explanation for tools.Just write here is result which you want. 
 
+CODE BLOCKS:
+When users ask for code examples, snippets, or explanations:
+  - Use the code_block tool to display formatted code
+  - Specify the correct language for syntax highlighting
+  - Add a filename when relevant (e.g., "app/page.tsx")
+  - For long code snippets, consider setting maxCollapsedLines
+  - Use highlightLines to draw attention to specific lines
+
 CHART CREATION:
 When users ask to visualize data, create charts, or see trends:
   1. Generate appropriate sample data or use provided data
@@ -363,6 +371,45 @@ export async function POST(req: Request) {
           }
 
           // Return the chart configuration - the UI will render it
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
+      code_block: tool({
+        description:
+          "Display code with syntax highlighting. Use this when users ask to see code examples, share code snippets, or need code explanations.",
+        inputSchema: z.object({
+          code: z.string().describe("The code to display"),
+          language: z
+            .string()
+            .optional()
+            .default("text")
+            .describe("Programming language for syntax highlighting"),
+          filename: z
+            .string()
+            .optional()
+            .describe("Optional filename to display"),
+          lineNumbers: z
+            .enum(["visible", "hidden"])
+            .optional()
+            .default("visible"),
+          highlightLines: z
+            .array(z.number().int().positive())
+            .optional()
+            .describe("Line numbers to highlight"),
+          maxCollapsedLines: z
+            .number()
+            .min(1)
+            .optional()
+            .describe("Max lines before collapse"),
+          title: z
+            .string()
+            .optional()
+            .describe("Optional title for the code block"),
+        }),
+        execute: async (input) => {
           return {
             ...input,
             timestamp: new Date().toISOString(),

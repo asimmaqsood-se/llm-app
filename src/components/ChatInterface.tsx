@@ -14,6 +14,7 @@ import { WeatherToolUI } from "@/components/tools/WeatherToolUI";
 import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
 import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
 import { ChartToolUI } from "@/components/tools/ChartToolUI";
+import { CodeBlockToolUI } from "@/components/tools/CodeBlockToolUI";
 import { UserProfileToolUI } from "@/components/tools/UserProfileToolUI";
 import { WebSearchToolUI, FetchDataToolUI, KnowledgeBaseToolUI } from "@/components/tools/ResearchToolUI";
 import { QueueDocumentToolUI } from "@/components/tools/QueuedocumentToolUI";
@@ -38,6 +39,7 @@ import {
   Settings, HelpCircle, MoreHorizontal, Clock, PanelLeft,
 } from "lucide-react";
 import { type FC, useState } from "react";
+
 
 // ── Assistant Avatar ──────────────────────────────────────────────────────────
 const AssistantAvatar: FC = () => (
@@ -384,6 +386,7 @@ export function ChatInterface() {
       <FetchDataToolUI />
       <KnowledgeBaseToolUI />
       <ChartToolUI />
+      <CodeBlockToolUI />
     </AssistantRuntimeProvider>
   );
 }
