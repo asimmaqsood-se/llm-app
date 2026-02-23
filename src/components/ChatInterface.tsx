@@ -1,245 +1,3 @@
-
-// "use client";
-
-// import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
-// import {
-//   AssistantRuntimeProvider,
-//   ThreadPrimitive,
-//   ComposerPrimitive,
-//   MessagePrimitive,
-//   ActionBarPrimitive,
-//   BranchPickerPrimitive,
-// } from "@assistant-ui/react";
-// import { useDocuments } from "@/lib/document-store";
-// import { WeatherToolUI } from "@/components/tools/WeatherToolUI";
-// import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
-// import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
-// import { UserProfileToolUI } from "@/components/tools/UserProfileToolUI";
-// import { WebSearchToolUI, FetchDataToolUI, KnowledgeBaseToolUI } from "@/components/tools/ResearchToolUI";
-// import { QueueDocumentToolUI } from "@/components/tools/QueuedocumentToolUI";
-// import { DocumentBadge } from "@/components/document/DocumentBadge";
-// import {
-//   Send,
-//   Square,
-//   ChevronLeft,
-//   ChevronRight,
-//   Copy,
-//   RefreshCw,
-//   ThumbsUp,
-//   ThumbsDown,
-// } from "lucide-react";
-// import { type FC } from "react";
-
-// // ── Sub-components ──────────────────────────────────────────────────────────
-
-// const AssistantAvatar: FC = () => (
-//   <div className="w-7 h-7 rounded-full bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center shrink-0 mt-0.5">
-//     <span className="text-white text-xs font-bold">C</span>
-//   </div>
-// );
-
-// const MyComposer: FC = () => (
-//   <ComposerPrimitive.Root className="flex items-end gap-2 px-4 py-3 border-t border-[var(--color-border)] bg-[var(--color-background)]">
-//     <div className="flex-1">
-//       <ComposerPrimitive.Input
-//         className="w-full resize-none bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm outline-none focus:border-[var(--color-primary)] transition-colors min-h-[52px] max-h-[200px] leading-relaxed placeholder:text-[var(--color-muted-foreground)] font-[var(--font-sans)]"
-//         placeholder="Message Claude..."
-//         autoFocus
-//         rows={1}
-//       />
-//     </div>
-//     <ComposerPrimitive.Send asChild>
-//       <button className="h-10 w-10 rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-foreground)] flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
-//         <Send className="w-4 h-4" />
-//       </button>
-//     </ComposerPrimitive.Send>
-//     <ComposerPrimitive.Cancel asChild>
-//       <button className="h-10 w-10 rounded-xl bg-[var(--color-destructive)]/10 text-[var(--color-destructive)] flex items-center justify-center hover:bg-[var(--color-destructive)]/20 transition-colors shrink-0">
-//         <Square className="w-4 h-4" />
-//       </button>
-//     </ComposerPrimitive.Cancel>
-//   </ComposerPrimitive.Root>
-// );
-
-// const MyUserMessage: FC = () => (
-//   <MessagePrimitive.Root className="flex justify-end mb-4 px-4">
-//     <div className="max-w-[80%]">
-//       <div className="bg-[var(--color-primary)] text-[var(--color-primary-foreground)] px-4 py-2.5 rounded-2xl rounded-br-sm text-sm leading-relaxed">
-//         <MessagePrimitive.Content />
-//       </div>
-//       {/* <ActionBarPrimitive.Root hideWhenRunning  className="flex justify-end mt-1">
-//         <ActionBarPrimitive.Edit asChild>
-//           <button className="text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] px-1.5 py-0.5 rounded transition-colors">
-//             Edit
-//           </button>
-//         </ActionBarPrimitive.Edit>
-//       </ActionBarPrimitive.Root> */}
-//     </div>
-//   </MessagePrimitive.Root>
-// );
-
-// const MyAssistantMessage: FC = () => (
-//   <MessagePrimitive.Root className="flex gap-3 mb-4 px-4 group">
-//     <AssistantAvatar />
-//     <div className="flex-1 min-w-0">
-//       <MessagePrimitive.Content
-//         // components={{
-//         //   Text: ({ children }) => (
-//         //     <div className="aui-assistant-message-content">{children}</div>
-//         //   ),
-//         // }}
-//       />
-//       <ActionBarPrimitive.Root
-//         hideWhenRunning
-//         className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
-//       >
-//         <ActionBarPrimitive.Copy asChild>
-//           <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors">
-//             <Copy className="w-3.5 h-3.5" />
-//           </button>
-//         </ActionBarPrimitive.Copy>
-//         <ActionBarPrimitive.Reload asChild>
-//           <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors">
-//             <RefreshCw className="w-3.5 h-3.5" />
-//           </button>
-//         </ActionBarPrimitive.Reload>
-//         <ActionBarPrimitive.FeedbackPositive asChild>
-//           <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:text-emerald-600 transition-colors">
-//             <ThumbsUp className="w-3.5 h-3.5" />
-//           </button>
-//         </ActionBarPrimitive.FeedbackPositive>
-//         <ActionBarPrimitive.FeedbackNegative asChild>
-//           <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] hover:text-red-500 transition-colors">
-//             <ThumbsDown className="w-3.5 h-3.5" />
-//           </button>
-//         </ActionBarPrimitive.FeedbackNegative>
-//         <BranchPickerPrimitive.Root hideWhenSingleBranch className="flex items-center gap-0.5 ml-1">
-//           <BranchPickerPrimitive.Previous asChild>
-//             <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] transition-colors">
-//               <ChevronLeft className="w-3.5 h-3.5" />
-//             </button>
-//           </BranchPickerPrimitive.Previous>
-//           <span className="text-xs text-[var(--color-muted-foreground)] px-1">
-//             <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
-//           </span>
-//           <BranchPickerPrimitive.Next asChild>
-//             <button className="p-1.5 rounded-lg hover:bg-[var(--color-muted)] text-[var(--color-muted-foreground)] transition-colors">
-//               <ChevronRight className="w-3.5 h-3.5" />
-//             </button>
-//           </BranchPickerPrimitive.Next>
-//         </BranchPickerPrimitive.Root>
-//       </ActionBarPrimitive.Root>
-//     </div>
-//   </MessagePrimitive.Root>
-// );
-
-// const MyWelcome: FC = () => (
-//   <ThreadPrimitive.Empty>
-//     <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
-//       <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg">
-//         <span className="text-white text-2xl font-bold" style={{ fontFamily: "var(--font-display)" }}>
-//           C
-//         </span>
-//       </div>
-//       <h2
-//         className="text-2xl font-semibold mb-2 text-[var(--color-foreground)]"
-//         style={{ fontFamily: "var(--font-display)" }}
-//       >
-//         How can I help you today?
-//       </h2>
-//       <p className="text-sm text-[var(--color-muted-foreground)] mb-8 max-w-xs">
-//         Ask me anything — I can answer questions, do math, check weather, and write documents.
-//       </p>
-//       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
-//         {[
-//           { label: "🌤️ Weather in Tokyo",       prompt: "What's the weather in Tokyo?" },
-//           { label: "🔢 Calculate 15% of 847",   prompt: "Calculate 15% of 847" },
-//           { label: "📄 Write a project proposal", prompt: "Write a project proposal for an AI-powered analytics dashboard" },
-//           { label: "📝 Create a README",         prompt: "Create a README.md for a Next.js + TypeScript project" },
-//           { label: "🔬 Research: AI Agents",        prompt: "Research the topic of AI agents — gather info from all sources simultaneously" },
-//         ].map((s) => (
-//           <ThreadPrimitive.Suggestion key={s.prompt} prompt={s.prompt} autoSend asChild>
-//             <button className="text-left px-4 py-3 rounded-xl border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-accent)]/50 transition-all text-sm text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]">
-//               {s.label}
-//             </button>
-//           </ThreadPrimitive.Suggestion>
-//         ))}
-//       </div>
-//     </div>
-//   </ThreadPrimitive.Empty>
-// );
-
-// const MyThread: FC = () => (
-//   <ThreadPrimitive.Root className="flex flex-col h-full">
-//     <ThreadPrimitive.Viewport className="flex-1 overflow-y-auto py-6 relative">
-//       <MyWelcome />
-//       <ThreadPrimitive.Messages
-//         components={{
-//           UserMessage: MyUserMessage,
-//           AssistantMessage: MyAssistantMessage,
-//         }}
-//       />
-//       <ThreadPrimitive.If running>
-//         <div className="flex gap-3 px-4 mb-4">
-//           <AssistantAvatar />
-//           <div className="flex items-center gap-1 py-2">
-//             <span className="w-2 h-2 rounded-full bg-[var(--color-muted-foreground)]/50 animate-bounce [animation-delay:0ms]" />
-//             <span className="w-2 h-2 rounded-full bg-[var(--color-muted-foreground)]/50 animate-bounce [animation-delay:150ms]" />
-//             <span className="w-2 h-2 rounded-full bg-[var(--color-muted-foreground)]/50 animate-bounce [animation-delay:300ms]" />
-//           </div>
-//         </div>
-//       </ThreadPrimitive.If>
-//       <ThreadPrimitive.ScrollToBottom asChild>
-//         <button className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] shadow-md flex items-center justify-center text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)] transition-colors opacity-0 data-[visible=true]:opacity-100">
-//           <ChevronLeft className="w-4 h-4 -rotate-90" />
-//         </button>
-//       </ThreadPrimitive.ScrollToBottom>
-//     </ThreadPrimitive.Viewport>
-//     <MyComposer />
-//   </ThreadPrimitive.Root>
-// );
-
-// // ── Document badges bar ─────────────────────────────────────────────────────
-// function DocumentBadgesBar() {
-//   const { state } = useDocuments();
-//   if (state.documents.length === 0) return null;
-//   return (
-//     <div className="px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-card)]/30 backdrop-blur-sm">
-//       <div className="flex items-center gap-2 flex-wrap">
-//         <span className="text-xs text-[var(--color-muted-foreground)] shrink-0">Docs:</span>
-//         <DocumentBadge />
-//       </div>
-//     </div>
-//   );
-// }
-
-// // ── Root export ─────────────────────────────────────────────────────────────
-// export function ChatInterface() {
-//   const runtime = useChatRuntime({ api: "/api/chat" });
-
-//   return (
-//     <AssistantRuntimeProvider runtime={runtime}>
-//       <div className="flex flex-col h-full">
-//         <DocumentBadgesBar />
-//         <div className="flex-1 overflow-hidden">
-//           <MyThread />
-//         </div>
-//         {/* Tool UIs — must be inside AssistantRuntimeProvider */}
-//         <WeatherToolUI />
-//         <ArithmeticToolUI />
-//         <QueueDocumentToolUI />
-//         <UserProfileToolUI />
-//         <WebSearchToolUI />
-//         <FetchDataToolUI />
-//         <KnowledgeBaseToolUI />
-//       </div>
-//     </AssistantRuntimeProvider>
-//   );
-// }
-
-
-
-
 "use client";
 
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
@@ -255,6 +13,7 @@ import { useDocuments } from "@/lib/document-store";
 import { WeatherToolUI } from "@/components/tools/WeatherToolUI";
 import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
 import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
+import { ChartToolUI } from "@/components/tools/ChartToolUI";
 import { UserProfileToolUI } from "@/components/tools/UserProfileToolUI";
 import { WebSearchToolUI, FetchDataToolUI, KnowledgeBaseToolUI } from "@/components/tools/ResearchToolUI";
 import { QueueDocumentToolUI } from "@/components/tools/QueuedocumentToolUI";
@@ -599,9 +358,7 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 export function ChatInterface() {
   const runtime = useChatRuntime({ api: "/api/chat" });
   const { state } = useDocuments();
-
-
-
+  
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
@@ -626,6 +383,10 @@ export function ChatInterface() {
       <WebSearchToolUI />
       <FetchDataToolUI />
       <KnowledgeBaseToolUI />
+      <ChartToolUI />
     </AssistantRuntimeProvider>
   );
 }
+
+
+

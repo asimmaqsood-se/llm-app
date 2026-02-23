@@ -1,188 +1,3 @@
-// import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
-// import { streamText, tool, convertToModelMessages, UIMessage } from "ai";
-// import { z } from "zod";
-
-// const MODEL = "anthropic.claude-3-5-sonnet-20240620-v1:0";
-
-// const bedrock = createAmazonBedrock({
-//   region: process.env.AWS_REGION || "us-east-1",
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-// });
-
-// export const maxDuration = 60;
-
-// const SYSTEM_PROMPT = `You are a helpful AI assistant similar to Claude. You can help users with a wide range of tasks.
-
-// IMPORTANT DOCUMENT RULES:
-// When a user asks you to write, create, generate, draft, or edit any document (essays, reports, articles, letters, stories, code files, README files, proposals, plans, or any substantial text content), you MUST use the "document" tool to create or update the document. Do NOT write the document content inline in your message — always use the tool.
-
-// - For NEW documents: use the document tool with action "create"
-// - For EDITING existing documents: use the document tool with action "update" and include the full updated content
-
-// PROFILE COLLECTION RULES:
-// When you receive a collect_user_profile tool result, you MUST immediately call the document tool next — do NOT respond with plain text. Use the profile data to generate the requested document right away.
-
-// You have access to these tools:
-// 1. weather — Get current weather for any location
-// 2. arithmetic — Perform math operations
-// 3. document — Create or update documents (ALWAYS use this for any writing/document tasks)
-// 4. collect_user_profile — Collect personal info from the user via a form
-
-// Be conversational, helpful, and precise. When using the document tool, always provide the COMPLETE content of the document in Markdown. IMPORTANT: When calling the document tool, always put the 'content' field LAST in your arguments — after action, title, description, and documentId.
-
-// If the user asks you to personalize advice, create a profile, or you need personal info to help better — use the collect_user_profile tool to ask them via a form.
-
-// PARALLEL TOOL EXECUTION:
-// When a user asks to "research", "investigate", "gather info on", or "look up" a topic — call web_search, fetch_data, AND read_knowledge_base ALL AT ONCE in the same step. Do NOT call them one by one. Call all three simultaneously so they run in parallel. This is faster and more efficient.`;
-
-// export async function POST(req: Request) {
-//   const { messages, system }: { messages: UIMessage[]; system?: string } = await req.json();
-
-//   const modelMessages = await convertToModelMessages(messages);
-
-//   const result = streamText({
-//     model: bedrock(MODEL),
-//     system: system ?? SYSTEM_PROMPT,
-//     messages: modelMessages,
-//     experimental_context: false,
-//     tools: {
-//       weather: tool({
-//         description: "Get the current weather for a specific location",
-//         inputSchema: z.object({
-//           location: z.string().describe("The city and country, e.g. 'London, UK'"),
-//           unit: z.enum(["celsius", "fahrenheit"]).optional().describe("Temperature unit"),
-//         }),
-//         execute: async ({ location, unit = "celsius" }) => {
-//           const conditions = [
-//             "Sunny", "Partly Cloudy", "Overcast", "Light Rain",
-//             "Heavy Rain", "Thunderstorm", "Snow", "Foggy", "Windy", "Clear",
-//           ];
-//           const condition = conditions[Math.floor(Math.random() * conditions.length)];
-//           const tempC = Math.round(Math.random() * 35 - 5);
-//           const temp = unit === "fahrenheit" ? Math.round((tempC * 9) / 5 + 32) : tempC;
-//           return {
-//             location,
-//             temperature: temp,
-//             unit: unit === "fahrenheit" ? "°F" : "°C",
-//             condition,
-//             humidity: Math.round(Math.random() * 60 + 30),
-//             windSpeed: Math.round(Math.random() * 30 + 5),
-//             feelsLike: unit === "fahrenheit" ? Math.round(((tempC - 2) * 9) / 5 + 32) : tempC - 2,
-//           };
-//         },
-//       }),
-
-//       arithmetic: tool({
-//         description: "Perform arithmetic operations: add, subtract, multiply, divide, power, sqrt, percentage, modulo",
-//         inputSchema: z.object({
-//           operation: z.enum(["add", "subtract", "multiply", "divide", "power", "sqrt", "percentage", "modulo"]),
-//           a: z.number().describe("First number"),
-//           b: z.number().optional().describe("Second number (not needed for sqrt)"),
-//         }),
-//         execute: async ({ operation, a, b }) => {
-//           let result: number;
-//           let expression: string;
-//           switch (operation) {
-//             case "add":      result = a + (b ?? 0); expression = `${a} + ${b} = ${result}`; break;
-//             case "subtract": result = a - (b ?? 0); expression = `${a} - ${b} = ${result}`; break;
-//             case "multiply": result = a * (b ?? 1); expression = `${a} × ${b} = ${result}`; break;
-//             case "divide":
-//               if (b === 0) return { error: "Division by zero" };
-//               result = a / (b ?? 1); expression = `${a} ÷ ${b} = ${result}`; break;
-//             case "power":      result = Math.pow(a, b ?? 2);   expression = `${a}^${b} = ${result}`; break;
-//             case "sqrt":       result = Math.sqrt(a);           expression = `√${a} = ${result}`; break;
-//             case "percentage": result = (a * (b ?? 100)) / 100; expression = `${b}% of ${a} = ${result}`; break;
-//             case "modulo":     result = a % (b ?? 1);           expression = `${a} % ${b} = ${result}`; break;
-//             default: return { error: "Unknown operation" };
-//           }
-//           return { result, expression, operation, inputs: { a, b } };
-//         },
-//       }),
-
-//         collect_user_profile: tool({
-//         description: "Collect personal information from the user via an interactive form. Use this when you need the user's name, age, occupation, or goals to give a personalized response. The user will fill in a form and submit — you will receive the data as the tool result.",
-//         inputSchema: z.object({
-//           reason: z.string().optional().describe("Why you need this info — shown to the user above the form"),
-//           fields: z.array(z.string()).optional().describe("Fields to collect"),
-//         }),
-//         // No execute — user fills the form client-side via addResult()
-//       }),
-
-//       web_search: tool({
-//         description: "Search the web for information on a topic. Call this in parallel with fetch_data and read_knowledge_base when researching.",
-//         inputSchema: z.object({
-//           query: z.string().describe("The search query"),
-//           source: z.string().optional().describe("Preferred source type"),
-//         }),
-//         execute: async ({ query, source = "general" }) => {
-//           const start = Date.now();
-//           // Simulate async web search (1.5 seconds)
-//           await new Promise(r => setTimeout(r, 1500));
-//           return {
-//             query,
-//             source,
-//             summary: `Found 8 relevant results for "${query}" from web sources including recent articles, documentation, and research papers.`,
-//             duration_ms: Date.now() - start,
-//           };
-//         },
-//       }),
-
-//       fetch_data: tool({
-//         description: "Fetch structured data from an API or database. Call this in parallel with web_search and read_knowledge_base when researching.",
-//         inputSchema: z.object({
-//           url: z.string().describe("The data source URL or identifier"),
-//           data_type: z.string().optional().describe("Type of data to fetch"),
-//         }),
-//         execute: async ({ url, data_type = "JSON" }) => {
-//           const start = Date.now();
-//           // Simulate async data fetch (2 seconds)
-//           await new Promise(r => setTimeout(r, 2000));
-//           return {
-//             url,
-//             data_type,
-//             records: Math.floor(Math.random() * 500) + 50,
-//             duration_ms: Date.now() - start,
-//           };
-//         },
-//       }),
-
-//       read_knowledge_base: tool({
-//         description: "Read internal knowledge base for a topic. Call this in parallel with web_search and fetch_data when researching.",
-//         inputSchema: z.object({
-//           topic: z.string().describe("The topic to look up"),
-//           depth: z.enum(["shallow", "deep"]).optional().describe("Search depth"),
-//         }),
-//         execute: async ({ topic, depth = "shallow" }) => {
-//           const start = Date.now();
-//           // Simulate async KB read (1 second)
-//           await new Promise(r => setTimeout(r, 1000));
-//           return {
-//             topic,
-//             depth,
-//             articles_found: Math.floor(Math.random() * 20) + 3,
-//             duration_ms: Date.now() - start,
-//           };
-//         },
-//       }),
-//       document: tool({
-//         description: "Create a new document or update an existing document. Use this whenever the user asks to write, create, generate, draft, or edit any document, essay, article, report, story, code, or substantial text content.",
-//         inputSchema: z.object({
-//           action: z.enum(["create", "update"]).describe("Whether to create a new document or update an existing one"),
-//           title: z.string().describe("The title of the document"),
-//           description: z.string().optional().describe("Brief description of what changed or what this document is about"),
-//           documentId: z.string().optional().describe("The ID of the document to update (required for update action)"),
-//           content: z.string().describe("The full Markdown content of the document"),
-//         }),
-//          execute: async (args) => args,
-//         // No execute — handled client-side via makeAssistantToolUI
-//       }),
-//     },
-//   });
-
-//   return result.toUIMessageStreamResponse();
-// }
-
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import {
   streamText,
@@ -209,6 +24,17 @@ export const maxDuration = 60;
 const SYSTEM_PROMPT = `You are a helpful AI assistant similar to Claude.
 
 Don't write explanation for tools.Just write here is result which you want. 
+
+CHART CREATION:
+When users ask to visualize data, create charts, or see trends:
+  1. Generate appropriate sample data or use provided data
+  2. Call create_chart with the data and configuration
+  3. Choose the right chart type:
+     - bar: Compare categories, show distributions
+     - line: Show trends over time
+     - pie: Show proportions/percentages
+     - area: Show cumulative trends
+
 
 DOCUMENT CREATION — ASYNC TWO-CALL FLOW:
 When a user asks to create/write/draft any document:
@@ -501,8 +327,50 @@ export async function POST(req: Request) {
           };
         },
       }),
+      create_chart: tool({
+        description:
+          "Create a data visualization chart. Use this when users ask to visualize data, create charts, or see trends.",
+        inputSchema: z.object({
+          title: z.string().describe("Chart title"),
+          description: z
+            .string()
+            .optional()
+            .describe("Brief description or subtitle"),
+          type: z
+            .enum(["bar", "line", "pie", "area"])
+            .describe("Type of chart"),
+          data: z.array(z.record(z.any())).describe("Array of data objects"),
+          xKey: z.string().describe("Key for x-axis values"),
+          series: z
+            .array(
+              z.object({
+                key: z.string(),
+                label: z.string(),
+              }),
+            )
+            .describe("Series to plot"),
+          showLegend: z.boolean().optional().default(true),
+          showGrid: z.boolean().optional().default(true),
+          stacked: z
+            .boolean()
+            .optional()
+            .describe("For bar charts, stack the series"),
+        }),
+        execute: async (input) => {
+          // Validate data
+          if (!input.data || input.data.length === 0) {
+            throw new Error("No data provided for chart");
+          }
+
+          // Return the chart configuration - the UI will render it
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
     },
   });
 
-  return result.toUIMessageStreamResponse({ sendUsage: false });
+  return result.toUIMessageStreamResponse();
 }
