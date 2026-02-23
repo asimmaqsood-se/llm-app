@@ -15,10 +15,18 @@ import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
 import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
 import { ChartToolUI } from "@/components/tools/ChartToolUI";
 import { CodeBlockToolUI } from "@/components/tools/CodeBlockToolUI";
+import { MessageDraftToolUI } from "@/components/tools/MessageDraftToolUI";
 import { UserProfileToolUI } from "@/components/tools/UserProfileToolUI";
-import { WebSearchToolUI, FetchDataToolUI, KnowledgeBaseToolUI } from "@/components/tools/ResearchToolUI";
+import { ImageToolUI } from "@/components/tools/ImageToolUI";
+import {
+  WebSearchToolUI,
+  FetchDataToolUI,
+  KnowledgeBaseToolUI,
+} from "@/components/tools/ResearchToolUI";
 import { QueueDocumentToolUI } from "@/components/tools/QueuedocumentToolUI";
 import { DocumentBadge } from "@/components/document/DocumentBadge";
+import { DataTableToolUI } from "@/components/tools/DataTableToolUI";
+import { ApprovalCardToolUI } from "@/components/tools/ApprovalCardToolUI";
 
 // ── shadcn components ────────────────────────────────────────────────────────
 import { Button } from "@/components/ui/button";
@@ -34,12 +42,25 @@ import {
 } from "@/components/ui/tooltip";
 
 import {
-  Send, Square, ChevronLeft, ChevronRight, Copy, RefreshCw,
-  ThumbsUp, ThumbsDown, Plus, Bot, Briefcase, AlertTriangle,
-  Settings, HelpCircle, MoreHorizontal, Clock, PanelLeft,
+  Send,
+  Square,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  RefreshCw,
+  ThumbsUp,
+  ThumbsDown,
+  Plus,
+  Bot,
+  Briefcase,
+  AlertTriangle,
+  Settings,
+  HelpCircle,
+  MoreHorizontal,
+  Clock,
+  PanelLeft,
 } from "lucide-react";
 import { type FC, useState } from "react";
-
 
 // ── Assistant Avatar ──────────────────────────────────────────────────────────
 const AssistantAvatar: FC = () => (
@@ -64,7 +85,11 @@ const MyComposer: FC = () => (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" className="w-8 h-8 rounded-full">
+              <Button
+                variant="outline"
+                size="icon"
+                className="w-8 h-8 rounded-full"
+              >
                 <Plus className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -74,12 +99,19 @@ const MyComposer: FC = () => (
 
         <div className="flex items-center gap-2">
           <ComposerPrimitive.Cancel asChild>
-            <Button variant="secondary" size="icon" className="w-8 h-8 rounded-full">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="w-8 h-8 rounded-full"
+            >
               <Square className="w-3.5 h-3.5" />
             </Button>
           </ComposerPrimitive.Cancel>
           <ComposerPrimitive.Send asChild>
-            <Button size="icon" className="w-8 h-8 rounded-full bg-black hover:bg-gray-800 disabled:opacity-40">
+            <Button
+              size="icon"
+              className="w-8 h-8 rounded-full bg-black hover:bg-gray-800 disabled:opacity-40"
+            >
               <Send className="w-3.5 h-3.5" />
             </Button>
           </ComposerPrimitive.Send>
@@ -116,7 +148,11 @@ const MyAssistantMessage: FC = () => (
           <Tooltip>
             <TooltipTrigger asChild>
               <ActionBarPrimitive.Copy asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-gray-600">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-400 hover:text-gray-600"
+                >
                   <Copy className="w-3.5 h-3.5" />
                 </Button>
               </ActionBarPrimitive.Copy>
@@ -127,7 +163,11 @@ const MyAssistantMessage: FC = () => (
           <Tooltip>
             <TooltipTrigger asChild>
               <ActionBarPrimitive.Reload asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-gray-600">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-400 hover:text-gray-600"
+                >
                   <RefreshCw className="w-3.5 h-3.5" />
                 </Button>
               </ActionBarPrimitive.Reload>
@@ -138,7 +178,11 @@ const MyAssistantMessage: FC = () => (
           <Tooltip>
             <TooltipTrigger asChild>
               <ActionBarPrimitive.FeedbackPositive asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-emerald-500">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-400 hover:text-emerald-500"
+                >
                   <ThumbsUp className="w-3.5 h-3.5" />
                 </Button>
               </ActionBarPrimitive.FeedbackPositive>
@@ -149,7 +193,11 @@ const MyAssistantMessage: FC = () => (
           <Tooltip>
             <TooltipTrigger asChild>
               <ActionBarPrimitive.FeedbackNegative asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-400">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-gray-400 hover:text-red-400"
+                >
                   <ThumbsDown className="w-3.5 h-3.5" />
                 </Button>
               </ActionBarPrimitive.FeedbackNegative>
@@ -158,9 +206,16 @@ const MyAssistantMessage: FC = () => (
           </Tooltip>
         </TooltipProvider>
 
-        <BranchPickerPrimitive.Root hideWhenSingleBranch className="flex items-center gap-0.5 ml-1">
+        <BranchPickerPrimitive.Root
+          hideWhenSingleBranch
+          className="flex items-center gap-0.5 ml-1"
+        >
           <BranchPickerPrimitive.Previous asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-gray-400"
+            >
               <ChevronLeft className="w-3.5 h-3.5" />
             </Button>
           </BranchPickerPrimitive.Previous>
@@ -168,7 +223,11 @@ const MyAssistantMessage: FC = () => (
             <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
           </span>
           <BranchPickerPrimitive.Next asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-gray-400"
+            >
               <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </BranchPickerPrimitive.Next>
@@ -182,20 +241,45 @@ const MyAssistantMessage: FC = () => (
 const MyWelcome: FC = () => (
   <ThreadPrimitive.Empty>
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-1.5" style={{ fontFamily: "Georgia, serif" }}>
+      <h2
+        className="text-2xl font-semibold text-gray-800 mb-1.5"
+        style={{ fontFamily: "Georgia, serif" }}
+      >
         Hello there!
       </h2>
       <p className="text-sm text-gray-400 mb-10">How can I help you today?</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
         {[
-          { label: "🌤️ Weather in Tokyo",          prompt: "What's the weather in Tokyo?" },
-          { label: "🔢 Calculate 15% of 847",      prompt: "Calculate 15% of 847" },
-          { label: "📄 Write a project proposal",   prompt: "Write a project proposal for an AI-powered analytics dashboard" },
-          { label: "📝 Create a README",            prompt: "Create a README.md for a Next.js + TypeScript project" },
-          { label: "🔬 Research: AI Agents",        prompt: "Research the topic of AI agents — gather info from all sources simultaneously" },
-          { label: "🧑 Personalized fitness plan",  prompt: "Create a personalized fitness plan for me" },
+          {
+            label: "🌤️ Weather in Tokyo",
+            prompt: "What's the weather in Tokyo?",
+          },
+          { label: "🔢 Calculate 15% of 847", prompt: "Calculate 15% of 847" },
+          {
+            label: "📄 Write a project proposal",
+            prompt:
+              "Write a project proposal for an AI-powered analytics dashboard",
+          },
+          {
+            label: "📝 Create a README",
+            prompt: "Create a README.md for a Next.js + TypeScript project",
+          },
+          {
+            label: "🔬 Research: AI Agents",
+            prompt:
+              "Research the topic of AI agents — gather info from all sources simultaneously",
+          },
+          {
+            label: "🧑 Personalized fitness plan",
+            prompt: "Create a personalized fitness plan for me",
+          },
         ].map((s) => (
-          <ThreadPrimitive.Suggestion key={s.prompt} prompt={s.prompt} autoSend asChild>
+          <ThreadPrimitive.Suggestion
+            key={s.prompt}
+            prompt={s.prompt}
+            autoSend
+            asChild
+          >
             <Button
               variant="outline"
               className="h-auto text-left px-4 py-3 rounded-xl justify-start font-normal text-gray-500 hover:text-gray-700"
@@ -268,7 +352,12 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-2">
         <div>
-          <img src="/tz-logo-blue.svg" alt="TargetZero" height={40} width={36} />
+          <img
+            src="/tz-logo-blue.svg"
+            alt="TargetZero"
+            height={40}
+            width={36}
+          />
         </div>
         <span className="font-semibold text-sm text-gray-800">TargetZero</span>
       </div>
@@ -299,10 +388,18 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-700 truncate">John Doe</p>
-            <p className="text-[10px] text-gray-400 truncate">john.doe@agency.gov</p>
+            <p className="text-xs font-medium text-gray-700 truncate">
+              John Doe
+            </p>
+            <p className="text-[10px] text-gray-400 truncate">
+              john.doe@agency.gov
+            </p>
           </div>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-gray-400 shrink-0"
+          >
             <MoreHorizontal className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -317,7 +414,10 @@ function DocumentBadgesBar() {
   if (state.documents.length === 0) return null;
   return (
     <div className="px-4 py-2 border-b border-gray-200 bg-white flex items-center gap-2 flex-wrap">
-      <Badge variant="secondary" className="text-[10px] text-gray-400 bg-transparent border-0 px-0 font-normal">
+      <Badge
+        variant="secondary"
+        className="text-[10px] text-gray-400 bg-transparent border-0 px-0 font-normal"
+      >
         Docs:
       </Badge>
       <DocumentBadge />
@@ -333,7 +433,12 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400" onClick={onToggleSidebar}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-gray-400"
+                onClick={onToggleSidebar}
+              >
                 <PanelLeft className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -343,11 +448,19 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <span className="text-sm font-medium text-gray-700">Agent</span>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="h-8 text-xs text-gray-500 gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs text-gray-500 gap-1.5"
+        >
           <Plus className="w-3.5 h-3.5" />
           New Thread
         </Button>
-        <Button variant="outline" size="sm" className="h-8 text-xs text-gray-500 gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs text-gray-500 gap-1.5"
+        >
           <Clock className="w-3.5 h-3.5" />
           Recents
         </Button>
@@ -360,7 +473,7 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 export function ChatInterface() {
   const runtime = useChatRuntime({ api: "/api/chat" });
   const { state } = useDocuments();
-  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
@@ -369,7 +482,7 @@ export function ChatInterface() {
         <Sidebar collapsed={sidebarCollapsed || state.isDocumentPanelOpen} />
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header onToggleSidebar={() => setSidebarCollapsed(v => !v)} />
+          <Header onToggleSidebar={() => setSidebarCollapsed((v) => !v)} />
           <DocumentBadgesBar />
           <div className="flex-1 overflow-hidden">
             <MyThread />
@@ -387,9 +500,10 @@ export function ChatInterface() {
       <KnowledgeBaseToolUI />
       <ChartToolUI />
       <CodeBlockToolUI />
+      <DataTableToolUI />
+      <ImageToolUI /> 
+      <MessageDraftToolUI />
+       <ApprovalCardToolUI />
     </AssistantRuntimeProvider>
   );
 }
-
-
-

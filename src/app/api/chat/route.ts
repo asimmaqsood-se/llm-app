@@ -10,6 +10,12 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import documentJobs from "@/lib/documentJobs";
 import { generateDocumentInBackground } from "@/app/api/generate-document/route";
+import { SerializableMessageDraftSchema } from "@/components/tool-ui/message-draft/schema";
+import { SerializableImageSchema } from "@/components/tool-ui/image/schema";
+
+import { SerializableDataTableSchema } from "@/components/tool-ui/data-table/schema";
+
+import { SerializableApprovalCardSchema } from "@/components/tool-ui/approval-card/schema";
 
 const MODEL = "anthropic.claude-3-5-sonnet-20240620-v1:0";
 
@@ -24,6 +30,64 @@ export const maxDuration = 60;
 const SYSTEM_PROMPT = `You are a helpful AI assistant similar to Claude.
 
 Don't write explanation for tools.Just write here is result which you want. 
+
+IMAGES:
+When users ask to see images, screenshots, diagrams, or visual content:
+  - Use the image tool to display images with proper attribution
+  - Always provide meaningful alt text for accessibility
+  - Include title and description when helpful
+  - Add source attribution when the image comes from a specific source
+  - Use appropriate aspect ratios (square for icons, wide for landscapes)
+  - Link to original source when applicable
+
+Examples of when to use images:
+  - Product screenshots or mockups
+  - Data visualizations and charts (consider also chart tool)
+  - Diagrams and flowcharts
+  - Profile pictures or avatars
+  - Reference images for design discussions
+
+APPROVAL CARDS:
+When you need user confirmation before taking action:
+  - Use the approval_card tool to present a clear decision point
+  - Include relevant metadata to help the user decide
+  - Use 'destructive' variant for irreversible or dangerous actions
+  - The card will show results after user makes a choice
+
+Examples of when to use approval cards:
+  - Before sending an important email
+  - Before deleting data
+  - Before making a significant change
+  - When requiring confirmation for financial transactions
+  - Before proceeding with irreversible operations
+
+
+MESSAGE DRAFTS:
+When users ask to compose messages (emails, Slack messages, etc.):
+  - Use the message_draft tool to create a draft for review
+  - For emails: Include subject, recipients (to, cc, bcc), and body
+  - For Slack: Specify target channel or DM, and message body
+  - The user can review, edit (via conversation), send, or cancel
+  - After sending, there's a 5-second grace period to undo
+
+Example formats:
+  Email: "Draft an email to john@example.com about the project update"
+  Slack: "Create a Slack message for #general announcing the new feature"
+
+DATA TABLES:
+When users ask to see structured data, comparisons, or tabular information:
+  - Use the data_table tool to display information in a sortable table
+  - Define clear columns with appropriate labels
+  - Format values appropriately (currency, percentages, dates, etc.)
+  - Set a rowIdKey to a unique identifier if available
+  - Consider column priorities for mobile views
+  - Add defaultSort when relevant
+
+Example table formats:
+  - Financial data: Use currency formatting
+  - Performance metrics: Use number formatting with appropriate decimals
+  - Status tracking: Use badge or status formatting
+  - Lists with links: Use link formatting
 
 CODE BLOCKS:
 When users ask for code examples, snippets, or explanations:
@@ -416,6 +480,118 @@ export async function POST(req: Request) {
           };
         },
       }),
+      data_table: tool({
+        description:
+          "Display structured data in a sortable table format. Use this when users ask to see data in tabular form, compare values, or view structured information.",
+        inputSchema: SerializableDataTableSchema, // Use the existing schema
+        execute: async (input) => {
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
+      approval_card: tool({
+        description:
+          "Present an approval request to the user with confirm/deny options. Use this when you need user confirmation for actions, approvals for decisions, or any situation requiring explicit user consent before proceeding.",
+        inputSchema: z.object({
+          id: z.string(),
+          role: z.string().optional(),
+          title: z
+            .string()
+            .min(1)
+            .describe("The main question or action requiring approval"),
+          description: z
+            .string()
+            .optional()
+            .describe(
+              "Additional context or details about what's being approved",
+            ),
+          icon: z
+            .string()
+            .optional()
+            .describe(
+              "Lucide icon name (e.g., 'check-circle', 'alert-triangle', 'trash-2')",
+            ),
+          metadata: z
+            .array(
+              z.object({
+                key: z.string(),
+                value: z.string(),
+              }),
+            )
+            .optional()
+            .describe("Key-value pairs showing relevant information"),
+          variant: z
+            .enum(["default", "destructive"])
+            .optional()
+            .default("default")
+            .describe("Visual style - use 'destructive' for dangerous actions"),
+          confirmLabel: z
+            .string()
+            .optional()
+            .describe("Custom text for confirm button (default: 'Approve')"),
+          cancelLabel: z
+            .string()
+            .optional()
+            .describe("Custom text for cancel button (default: 'Deny')"),
+          choice: z.enum(["approved", "denied"]).optional(),
+        }),
+        execute: async (input) => {
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
+      image: tool({
+        description:
+          "Display an image with proper attribution, captions, and optional links. Use this when users ask to see images, screenshots, diagrams, or any visual content.",
+        inputSchema: z.object({
+          id: z.string(),
+          role: z.string().optional(),
+          receipt: z.any().optional(),
+          assetId: z.string(),
+          src: z.string().url(), // Changed from z.url() to z.string().url()
+          alt: z.string().min(1),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          href: z.string().url().optional(), // Changed from z.url() to z.string().url()
+          domain: z.string().optional(),
+          ratio:  z.enum(["auto", "1:1", "4:3", "16:9", "9:16"]).optional().default("auto"),
+          fit: z
+            .enum(["cover", "contain", "fill", "scale-down"])
+            .optional()
+            .default("cover"),
+          fileSizeBytes: z.number().int().positive().optional(),
+          createdAt: z.string().datetime().optional(),
+          locale: z.string().optional(),
+          source: z
+            .object({
+              label: z.string(),
+              iconUrl: z.string().url().optional(), // Changed from z.url() to z.string().url()
+              url: z.string().url().optional(), // Changed from z.url() to z.string().url()
+            })
+            .optional(),
+        }),
+        execute: async (input) => {
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
+      // message_draft: tool({
+      //   description:
+      //     "Create a draft message (email or Slack) for user review before sending. Use this when users ask to compose emails, Slack messages, or any kind of message that needs review before sending.",
+      //   inputSchema: SerializableMessageDraftSchema,
+      //   execute: async (input) => {
+      //     return {
+      //       ...input,
+      //       timestamp: new Date().toISOString(),
+      //     };
+      //   },
+      // }),
     },
   });
 
