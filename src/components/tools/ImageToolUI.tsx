@@ -30,7 +30,6 @@ export const ImageToolUI = makeAssistantToolUI<ImageArgs, ImageResult>({
         // Parse and validate the args
         const validatedProps = parseSerializableImage(args);
 
-        console.l
         
         const handleNavigate = (href: string, image: SerializableImage) => {
           console.log("Navigating to:", href);

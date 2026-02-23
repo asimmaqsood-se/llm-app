@@ -13,6 +13,8 @@ import { generateDocumentInBackground } from "@/app/api/generate-document/route"
 import { SerializableMessageDraftSchema } from "@/components/tool-ui/message-draft/schema";
 import { SerializableImageSchema } from "@/components/tool-ui/image/schema";
 
+import { SerializableQuestionFlowSchema } from "@/components/tool-ui/question-flow/schema";
+
 import { SerializableDataTableSchema } from "@/components/tool-ui/data-table/schema";
 
 import { SerializableApprovalCardSchema } from "@/components/tool-ui/approval-card/schema";
@@ -30,6 +32,21 @@ export const maxDuration = 60;
 const SYSTEM_PROMPT = `You are a helpful AI assistant similar to Claude.
 
 Don't write explanation for tools.Just write here is result which you want. 
+
+QUESTION FLOWS:
+When you need to collect multiple pieces of information from the user:
+  - Use the question_flow tool to present structured questions
+  - Choose the right mode:
+    * Progressive: For a single step/question
+    * Upfront: For multiple steps/screens of questions
+    * Receipt: To show collected answers summary
+  
+Use cases:
+  - Surveys and feedback collection
+  - Multi-step forms (user profile, preferences)
+  - Decision trees and guided choices
+  - Configuration wizards
+  - Screening questionnaires
 
 IMAGES:
 When users ask to see images, screenshots, diagrams, or visual content:
@@ -558,7 +575,10 @@ export async function POST(req: Request) {
           description: z.string().optional(),
           href: z.string().url().optional(), // Changed from z.url() to z.string().url()
           domain: z.string().optional(),
-          ratio:  z.enum(["auto", "1:1", "4:3", "16:9", "9:16"]).optional().default("auto"),
+          ratio: z
+            .enum(["auto", "1:1", "4:3", "16:9", "9:16"])
+            .optional()
+            .default("auto"),
           fit: z
             .enum(["cover", "contain", "fill", "scale-down"])
             .optional()
@@ -574,6 +594,95 @@ export async function POST(req: Request) {
             })
             .optional(),
         }),
+        execute: async (input) => {
+          return {
+            ...input,
+            timestamp: new Date().toISOString(),
+          };
+        },
+      }),
+      question_flow: tool({
+        description:
+          "Present a series of questions to the user to collect information. Use this when you need to gather multiple pieces of information, conduct surveys, or guide users through a decision process.",
+        inputSchema: z
+          .object({
+            // Use z.object() instead of discriminated union
+            type: z.enum(["progressive", "upfront", "receipt"]),
+            id: z.string(),
+            role: z.string().optional(),
+            // Progressive mode fields
+            step: z.number().min(1).optional(),
+            title: z.string().optional(),
+            description: z.string().optional(),
+            options: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  label: z.string(),
+                  description: z.string().optional(),
+                  disabled: z.boolean().optional(),
+                }),
+              )
+              .optional(),
+            selectionMode: z.enum(["single", "multi"]).optional(),
+            // Upfront mode fields
+            steps: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  title: z.string(),
+                  description: z.string().optional(),
+                  options: z
+                    .array(
+                      z.object({
+                        id: z.string(),
+                        label: z.string(),
+                        description: z.string().optional(),
+                        disabled: z.boolean().optional(),
+                      }),
+                    )
+                    .min(1),
+                  selectionMode: z.enum(["single", "multi"]).optional(),
+                }),
+              )
+              .optional(),
+            // Receipt mode fields
+            choice: z
+              .object({
+                title: z.string(),
+                summary: z
+                  .array(
+                    z.object({
+                      label: z.string(),
+                      value: z.string(),
+                    }),
+                  )
+                  .min(1),
+              })
+              .optional(),
+          })
+          .refine(
+            (data) => {
+              // Validate based on type
+              if (data.type === "progressive") {
+                return (
+                  data.step !== undefined &&
+                  data.title !== undefined &&
+                  data.options !== undefined
+                );
+              }
+              if (data.type === "upfront") {
+                return data.steps !== undefined && data.steps.length > 0;
+              }
+              if (data.type === "receipt") {
+                return data.choice !== undefined;
+              }
+              return false;
+            },
+            {
+              message: "Invalid combination of fields for the selected type",
+            },
+          ),
         execute: async (input) => {
           return {
             ...input,

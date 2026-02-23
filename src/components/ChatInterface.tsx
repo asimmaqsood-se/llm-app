@@ -15,6 +15,7 @@ import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
 import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
 import { ChartToolUI } from "@/components/tools/ChartToolUI";
 import { CodeBlockToolUI } from "@/components/tools/CodeBlockToolUI";
+import { QuestionFlowToolUI } from "@/components/tools/QuestionFlowToolUI";
 import { MessageDraftToolUI } from "@/components/tools/MessageDraftToolUI";
 import { UserProfileToolUI } from "@/components/tools/UserProfileToolUI";
 import { ImageToolUI } from "@/components/tools/ImageToolUI";
@@ -504,6 +505,7 @@ export function ChatInterface() {
       <ImageToolUI /> 
       <MessageDraftToolUI />
        <ApprovalCardToolUI />
+       <QuestionFlowToolUI />
     </AssistantRuntimeProvider>
   );
 }
