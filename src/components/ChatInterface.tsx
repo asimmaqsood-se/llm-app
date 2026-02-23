@@ -10,6 +10,7 @@ import {
   BranchPickerPrimitive,
 } from "@assistant-ui/react";
 import { useDocuments } from "@/lib/document-store";
+import { useAui, Tools, type Toolkit } from "@assistant-ui/react";
 import { WeatherToolUI } from "@/components/tools/WeatherToolUI";
 import { ArithmeticToolUI } from "@/components/tools/ArithmeticToolUI";
 import { DocumentToolUI } from "@/components/tools/DocumentToolUI";
@@ -62,6 +63,105 @@ import {
   PanelLeft,
 } from "lucide-react";
 import { type FC, useState } from "react";
+import z from "zod";
+import {
+  WeatherWidget,
+  type WeatherWidgetProps,
+} from "@/components/tool-ui/weather-widget/runtime";
+import { createArgsToolRenderer } from "@/components/tool-ui/shared";
+
+
+
+const WeatherWidgetPayloadSchema = z.object({}).passthrough();
+
+
+const myToolkit: Toolkit = {
+   weather: {
+    description: "Display current weather and forecast for a location",
+    parameters: WeatherWidgetPayloadSchema,
+    render: createArgsToolRenderer({
+      safeParse: (input) =>
+        safeParseWeatherWidgetPayload({
+          version: "3.1",
+          ...(input as Record<string, unknown>),
+        }),
+      idPrefix: "weather",
+      render: (parsedArgs) => <WeatherWidget {...parsedArgs} />,
+    }),
+  },
+  // weather: {
+  //   description: "Get current weather for a location",
+  //   parameters: z.object({
+  //     location: z.string(),
+  //     unit: z.enum(["celsius", "fahrenheit"]).optional(),
+  //   }),
+  //   execute: async ({ location, unit = "celsius" }) => {
+  //     const conditions = [
+  //       "Sunny",
+  //       "Partly Cloudy",
+  //       "Overcast",
+  //       "Light Rain",
+  //       "Heavy Rain",
+  //       "Thunderstorm",
+  //       "Snow",
+  //       "Foggy",
+  //       "Windy",
+  //       "Clear",
+  //     ];
+
+  //     console.log("weather frontend tool calling... ", location, unit);
+  //     const condition =
+  //       conditions[Math.floor(Math.random() * conditions.length)];
+  //     const tempC = Math.round(Math.random() * 35 - 5);
+  //     const temp =
+  //       unit === "fahrenheit" ? Math.round((tempC * 9) / 5 + 32) : tempC;
+  //     return {
+  //       location,
+  //       temperature: temp,
+  //       unit: unit === "fahrenheit" ? "°F" : "°C",
+  //       condition,
+  //       humidity: Math.round(Math.random() * 60 + 30),
+  //       windSpeed: Math.round(Math.random() * 30 + 5),
+  //       feelsLike:
+  //         unit === "fahrenheit"
+  //           ? Math.round(((tempC - 2) * 9) / 5 + 32)
+  //           : tempC - 2,
+  //     };
+  //   },
+  //   render: ({ args, result }) => {
+  //     if (!result) return <div>Fetching weather for {args.location}...</div>;
+  //     return (
+  //       <div className="weather-card">
+  //         <h3>{args.location}</h3>
+  //         <p>
+  //           {result.temperature}° {args.unit}
+  //         </p>
+  //         <p>{result.conditions}</p>
+  //       </div>
+  //     );
+  //   },
+  // },
+  // Add more tools here
+};
+
+
+function safeParseWeatherWidgetPayload(
+  input: unknown,
+): WeatherWidgetProps | null {
+  const result = WeatherWidgetPayloadSchema.safeParse(input);
+  if (
+    !result.success ||
+    typeof result.data !== "object" ||
+    result.data === null
+  ) {
+    return null;
+  }
+  return {
+    version: "3.1",
+    ...(result.data as Omit<WeatherWidgetProps, "version">),
+  };
+}
+
 
 // ── Assistant Avatar ──────────────────────────────────────────────────────────
 const AssistantAvatar: FC = () => (
@@ -470,15 +570,29 @@ function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   );
 }
 
+
+function MyRuntimeProvider({ children }: { children: React.ReactNode }) {
+  const runtime = useChatRuntime({ api: "/api/chat" });
+
+  // Register all tools
+  const aui = useAui({
+    tools: Tools({ toolkit: myToolkit }),
+  });
+  return (
+    <AssistantRuntimeProvider aui={aui} runtime={runtime}>
+      {children}
+    </AssistantRuntimeProvider>
+  );
+}
+
 // ── Root Export ───────────────────────────────────────────────────────────────
 export function ChatInterface() {
-  const runtime = useChatRuntime({ api: "/api/chat" });
   const { state } = useDocuments();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
+    <MyRuntimeProvider >
       <div className="flex h-full bg-white overflow-hidden">
         <Sidebar collapsed={sidebarCollapsed || state.isDocumentPanelOpen} />
 
@@ -492,7 +606,7 @@ export function ChatInterface() {
       </div>
 
       {/* Tool UIs — must be inside AssistantRuntimeProvider */}
-      <WeatherToolUI />
+      {/* <WeatherToolUI /> */}
       <ArithmeticToolUI />
       <QueueDocumentToolUI />
       <UserProfileToolUI />
@@ -502,10 +616,10 @@ export function ChatInterface() {
       <ChartToolUI />
       <CodeBlockToolUI />
       <DataTableToolUI />
-      <ImageToolUI /> 
+      <ImageToolUI />
       <MessageDraftToolUI />
-       <ApprovalCardToolUI />
-       <QuestionFlowToolUI />
-    </AssistantRuntimeProvider>
+      <ApprovalCardToolUI />
+      <QuestionFlowToolUI />
+    </MyRuntimeProvider>
   );
 }

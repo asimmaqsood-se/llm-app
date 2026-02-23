@@ -206,35 +206,140 @@ export async function POST(req: Request) {
           location: z.string(),
           unit: z.enum(["celsius", "fahrenheit"]).optional(),
         }),
+        //   execute: async ({ location, unit = "celsius" }) => {
+
+        // console.log("weather backend tool calling... ", location, unit);
+
+        //     const conditions = [
+        //       "Sunny",
+        //       "Partly Cloudy",
+        //       "Overcast",
+        //       "Light Rain",
+        //       "Heavy Rain",
+        //       "Thunderstorm",
+        //       "Snow",
+        //       "Foggy",
+        //       "Windy",
+        //       "Clear",
+        //     ];
+        //     const condition =
+        //       conditions[Math.floor(Math.random() * conditions.length)];
+        //     const tempC = Math.round(Math.random() * 35 - 5);
+        //     const temp =
+        //       unit === "fahrenheit" ? Math.round((tempC * 9) / 5 + 32) : tempC;
+        //     return {
+        //       location,
+        //       temperature: temp,
+        //       unit: unit === "fahrenheit" ? "°F" : "°C",
+        //       condition,
+        //       humidity: Math.round(Math.random() * 60 + 30),
+        //       windSpeed: Math.round(Math.random() * 30 + 5),
+        //       feelsLike:
+        //         unit === "fahrenheit"
+        //           ? Math.round(((tempC - 2) * 9) / 5 + 32)
+        //           : tempC - 2,
+        //     };
+        //   },
+
         execute: async ({ location, unit = "celsius" }) => {
+          console.log("weather backend tool calling... ", location, unit);
+
           const conditions = [
-            "Sunny",
-            "Partly Cloudy",
-            "Overcast",
-            "Light Rain",
-            "Heavy Rain",
-            "Thunderstorm",
-            "Snow",
-            "Foggy",
-            "Windy",
-            "Clear",
+            { name: "Sunny", code: "clear", precip: 0, visibility: 10 },
+            {
+              name: "Partly Cloudy",
+              code: "partly-cloudy",
+              precip: 0,
+              visibility: 10,
+            },
+            { name: "Cloudy", code: "cloudy", precip: 0, visibility: 8 },
+            { name: "Overcast", code: "overcast", precip: 0, visibility: 6 },
+            {
+              name: "Light Rain",
+              code: "light-rain",
+              precip: 1,
+              visibility: 5,
+            },
+            {
+              name: "Heavy Rain",
+              code: "heavy-rain",
+              precip: 3,
+              visibility: 2,
+            },
+            {
+              name: "Thunderstorm",
+              code: "thunderstorm",
+              precip: 4,
+              visibility: 3,
+            },
+            { name: "Snow", code: "snow", precip: 2, visibility: 3 },
+            { name: "Foggy", code: "fog", precip: 0, visibility: 1 },
+            { name: "Windy", code: "windy", precip: 0, visibility: 10 },
+            { name: "Clear", code: "clear", precip: 0, visibility: 10 },
           ];
-          const condition =
+
+          const randomCondition =
             conditions[Math.floor(Math.random() * conditions.length)];
           const tempC = Math.round(Math.random() * 35 - 5);
           const temp =
             unit === "fahrenheit" ? Math.round((tempC * 9) / 5 + 32) : tempC;
+
+          // Generate forecast days
+          const today = new Date();
+          const forecastDays = [
+            { day: "Today", offset: 0 },
+            { day: "Tomorrow", offset: 1 },
+            {
+              day: new Date(
+                today.getTime() + 2 * 24 * 60 * 60 * 1000,
+              ).toLocaleDateString("en-US", { weekday: "long" }),
+              offset: 2,
+            },
+          ];
+
+          const forecast = forecastDays.map((day, index) => ({
+            day: day.day,
+            conditionCode:
+              index === 0
+                ? randomCondition.code
+                : index === 1
+                  ? randomCondition.code === "clear"
+                    ? "partly-cloudy"
+                    : "clear"
+                  : "cloudy",
+            tempHigh: temp + (3 - index),
+            tempLow: temp - (4 - index),
+          }));
+
           return {
-            location,
-            temperature: temp,
-            unit: unit === "fahrenheit" ? "°F" : "°C",
-            condition,
-            humidity: Math.round(Math.random() * 60 + 30),
-            windSpeed: Math.round(Math.random() * 30 + 5),
-            feelsLike:
-              unit === "fahrenheit"
-                ? Math.round(((tempC - 2) * 9) / 5 + 32)
-                : tempC - 2,
+            location: {
+              name: location,
+              lat: 0,
+              lon: 0,
+            },
+            units: {
+              temperature: unit === "fahrenheit" ? "f" : "c",
+              speed: "mph",
+              precipitation: "mm",
+            },
+            current: {
+              condition: randomCondition.name,
+              conditionCode: randomCondition.code,
+              temperature: temp,
+              feelsLike:
+                unit === "fahrenheit"
+                  ? Math.round(((tempC - 2) * 9) / 5 + 32)
+                  : tempC - 2,
+              humidity: Math.round(Math.random() * 60 + 30),
+              windSpeed: Math.round(Math.random() * 30 + 5),
+              precipitationLevel: randomCondition.precip,
+              visibility: randomCondition.visibility,
+              tempMax: temp + 3,
+              tempMin: temp - 4,
+            },
+            forecast: forecast,
+            time: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           };
         },
       }),
